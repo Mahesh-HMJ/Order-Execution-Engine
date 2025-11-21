@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Order Execution Engine - WebSocket Test Client</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 800px;
+      margin: 50px auto;
+      padding: 20px;
+    }
+    .form-group {
+      margin-bottom: 15px;
+    }
+    label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+    input, select, button {
+      width: 100%;
+      padding: 10px;
+      font-size: 14px;
+    }
+    button {
+      background: #007bff;
+      color: white;
+      border: none;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+    button:hover {
+      background: #0056b3;
+    }
+    #status {
+      margin-top: 20px;
+      padding: 15px;
+      background: #f8f9fa;
+      border-radius: 5px;
+    }
+    .log-entry {
+      padding: 8px;
+      margin: 5px 0;
+      border-left: 3px solid #007bff;
+      background: #e7f3ff;
+    }
+    .log-entry.pending { border-left-color: #ffc107; background: #fff3cd; }
+    .log-entry.routing { border-left-color: #17a2b8; background: #d1ecf1; }
+    .log-entry.building { border-left-color: #fd7e14; background: #fff4e5; }
+    .log-entry.submitted { border-left-color: #6c757d; background: #f8f9fa; }
+    .log-entry.confirmed { border-left-color: #28a745; background: #d4edda; }
+    .log-entry.failed { border-left-color: #dc3545; background: #f8d7da; }
+  </style>
+</head>
+<body>
+  <h1>Order Execution Engine - Test Client</h1>
+
+  <div class="form-group">
+    <label>Order Type:</label>
+    <select id="orderType">
+      <option value="market">Market</option>
+      <option value="limit">Limit</option>
+      <option value="sniper">Sniper</option>
+    </select>
+  </div>
+
+  <div class="form-group">
+    <label>Token In:</label>
+    <input type="text" id="tokenIn" value="SOL" />
+  </div>
+
+  <div class="form-group">
+    <label>Token Out:</label>
+    <input type="text" id="tokenOut" value="USDC" />
+  </div>
+
+  <div class="form-group">
+    <label>Amount In:</label>
+    <input type="number" id="amountIn" value="1000" />
+  </div>
+
+  <button onclick="submitOrder()">Submit Order</button>
+
+  <div id="status"></div>
+
+  <script>
+    let ws = null;
+
+    async function submitOrder() {
+      const orderType = document.getElementById('orderType').value;
+      const tokenIn = document.getElementById('tokenIn').value;
+      const tokenOut = document.getElementById('tokenOut').value;
+      const amountIn = parseFloat(document.getElementById('amountIn').value);
+
+      const statusDiv = document.getElementById('status');
+      statusDiv.innerHTML = '<p>Submitting order...</p>';
+
+      try {
+        const response = await fetch('http://localhost:3000/api/orders/execute', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ orderType, tokenIn, tokenOut, amountIn }),
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          statusDiv.innerHTML = `<p><strong>Order ID:</strong> ${data.orderId}</p>`;
+          connectWebSocket(data.orderId);
+        } else {
+          statusDiv.innerHTML = `<p style="color: red;">Error: ${data.error}</p>`;
+        }
+      } catch (err) {
+        statusDiv.innerHTML = `<p style="color: red;">Error: ${err.message}</p>`;
+      }
+    }
+
+    function connectWebSocket(orderId) {
+      const statusDiv = document.getElementById('status');
+
+      ws = new WebSocket(`ws://localhost:3000/api/orders/ws/${orderId}`);
+
+      ws.onopen = () => {
+        addLog('WebSocket connected', 'connected');
+      };
+
+      ws.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+        addLog(JSON.stringify(data, null, 2), data.status);
+      };
+
+      ws.onerror = (error) => {
+        addLog('WebSocket error: ' + error, 'failed');
+      };
+
+      ws.onclose = () => {
+        addLog('WebSocket closed', 'closed');
+      };
+    }
+
+    function addLog(message, status) {
+      const statusDiv = document.getElementById('status');
+      const logEntry = document.createElement('div');
+      logEntry.className = `log-entry ${status}`;
+      logEntry.innerHTML = `<pre>${message}</pre>`;
+      statusDiv.appendChild(logEntry);
+    }
+  </script>
+</body>
+</html>
