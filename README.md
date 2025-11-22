@@ -27,49 +27,93 @@ Implement Solana WebSocket subscriptions using `@solana/web3.js` to listen for `
 ## 🏗️ System Architecture
 
 ┌─────────────┐
-│ Client │ (React + Tailwind)
+
+│ Client      │ (React + Tailwind)
+
 └──────┬──────┘
-│ POST /api/orders/execute
-↓
+
+       │ POST /api/orders/execute
+
+       ↓
+
 ┌─────────────────────────────────┐
-│ Fastify API Server │
-│ (HTTP + WebSocket) │
+
+│ Fastify API Server              │
+
+│ (HTTP + WebSocket)              │
+
 └──────┬──────────────────────────┘
+
 │
+
 ↓ Validate & Persist Order
+
 ┌─────────────────────────────────┐
-│ PostgreSQL Database │
-│ (Order History & State) │
+
+│ PostgreSQL Database             │
+
+│ (Order History & State)         │
+
 └──────┬──────────────────────────┘
-│
-↓ Enqueue for Processing
+
+       │
+
+       ↓ Enqueue for Processing
+
 ┌─────────────────────────────────┐
-│ BullMQ + Redis │
-│ (10 concurrent workers) │
-│ - Rate limiting: 100/min │
-│ - Retry: 3 attempts │
+
+│ BullMQ + Redis                  │
+
+│ (10 concurrent workers)         │
+
+│ - Rate limiting: 100/min        │
+
+│ - Retry: 3 attempts             │
+
 └──────┬──────────────────────────┘
-│
-↓ Worker Processes Order
+
+       │
+
+       ↓ Worker Processes Order
+
 ┌───────────────────────────────────┐
-│ DEX Router Service │
-│ 1. Fetch Raydium quote (parallel)│
-│ 2. Fetch Meteora quote (parallel)│
-│ 3. Compare net outputs │
-│ 4. Select best DEX │
-│ 5. Execute swap (mock) │
+
+│ DEX Router Service                │
+
+│ 1. Fetch Raydium quote (parallel) │
+
+│ 2. Fetch Meteora quote (parallel) │
+
+│ 3. Compare net outputs            │
+
+│ 4. Select best DEX                │
+
+│ 5. Execute swap (mock)            │
+
 └──────┬────────────────────────────┘
-│
-↓ Broadcast Status Updates
+
+       │
+
+       ↓ Broadcast Status Updates
+
 ┌─────────────────────────────────┐
-│ WebSocket Manager │
-│ (Real-time status per order) │
+
+│ WebSocket Manager               │
+
+│ (Real-time status per order)    │
+
 └──────┬──────────────────────────┘
-│
-↓ Status Stream
+
+       │
+
+       ↓ Status Stream
+
 ┌─────────────┐
-│ Client │ (Timeline updates)
+
+│ Client      │ (Timeline updates)
+
 └─────────────┘
+
 
 **Key Architectural Decisions:**
 
@@ -267,8 +311,6 @@ npm run test:coverage
 Run in watch mode (during development)
 npm run test:watch
 
-text
-
 ### Test Coverage
 
 **20/20 tests passing** ✅ (100% pass rate)
@@ -319,43 +361,81 @@ npm run preview # Preview production build
 ### Project Structure
 
 order-execution-engine/
+
 ├── src/
+
 │ ├── config/ # Configuration & connections
+
 │ │ ├── database.ts # PostgreSQL pool setup
+
 │ │ └── redis.ts # Redis client setup
+
 │ ├── models/ # Data access layer
+
 │ │ └── order.model.ts # Order CRUD operations
+
 │ ├── services/ # Business logic
+
 │ │ ├── dex-router.service.ts # Mock DEX routing
+
 │ │ ├── order.service.ts # Order management
+
 │ │ ├── queue.service.ts # BullMQ worker
+
 │ │ └── websocket.service.ts # WebSocket manager
+
 │ ├── routes/ # API endpoints
+
 │ │ └── order.routes.ts # Order execution routes
+
 │ ├── types/ # TypeScript interfaces
+
 │ │ └── order.types.ts # Order & DEX types
+
 │ ├── utils/ # Utilities
+
 │ │ ├── logger.ts # Structured logging
+
 │ │ └── validation.ts # Input validation
+
 │ └── server.ts # Application entry point
+
 ├── tests/ # Test suite (20 tests)
+
 │ ├── dex-router.test.ts
+
 │ ├── order.model.test.ts
+
 │ ├── queue.test.ts
+
 │ ├── websocket.test.ts
+
 │ └── api.test.ts
+
 ├── database/
+
 │ └── initdb/
+
 │ └── schema.sql # Database schema with indexes
+
 ├── frontend/ # React frontend
+
 │ └── src/
+
 │ ├── components/ # React components
+
 │ ├── services/ # API client
+
 │ └── App.jsx # Main application
+
 ├── docker-compose.yml # Infrastructure setup
+
 ├── package.json
+
 ├── tsconfig.json
+
 ├── .env # Environment variables (gitignored)
+
 └── README.md
 
 ---
@@ -394,8 +474,6 @@ Restart infrastructure
 docker-compose down
 docker-compose up -d
 
-text
-
 ### Frontend can't connect
 
 Verify backend is running
@@ -404,7 +482,6 @@ curl http://localhost:3000/health
 Should return: {"status":"ok","timestamp":"..."}
 Check CORS configuration in src/server.ts
 Should allow origin: http://localhost:5173
-text
 
 ### Tests failing
 
