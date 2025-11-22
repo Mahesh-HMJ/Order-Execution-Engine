@@ -88,7 +88,6 @@ function OrderCard({ order }) {
             {order.timeline.map((item, index) => (
               <div key={index} className="flex items-center text-sm">
                 <div className="w-2 h-2 rounded-full bg-indigo-500 mr-2.5 flex-shrink-0"></div>
-                <span className="text-gray-700 font-medium flex-1">{item.status}</span>
                 <span className="text-gray-400 text-xs ml-auto">{formatTime(item.timestamp)}</span>
               </div>
             ))}
