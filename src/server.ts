@@ -3,12 +3,18 @@ import Fastify from 'fastify';
 import websocket from '@fastify/websocket';
 import { orderRoutes } from './routes/order.routes';
 import dotenv from 'dotenv';
+import fastifyCors from '@fastify/cors';
 
 dotenv.config();
 
 const fastify = Fastify({ 
   logger: true,
   requestTimeout: 30000,
+});
+
+fastify.register(fastifyCors, {
+  origin: 'http://localhost:5173',
+  methods: ['GET', 'POST', 'OPTIONS'],
 });
 
 // Register WebSocket plugin
@@ -49,3 +55,4 @@ const start = async () => {
 };
 
 start();
+

@@ -35,11 +35,15 @@ export class DexRouter {
   ): Promise<DexQuote> {
     await this.sleep(150 + Math.random() * 100);
     const basePrice = 100;
+    // randomize within a +/-2% range
+    const price = basePrice * (0.98 + Math.random() * 0.04);
+    const fee = 0.003;
     return {
       dex: 'raydium',
-      price: basePrice * (0.98 + Math.random() * 0.04),
-      fee: 0.003,
-      estimatedOutput: amount * basePrice * 0.997,
+      price,
+      fee,
+      // USE the dynamic price here
+      estimatedOutput: amount * price * (1 - fee),
       liquidity: 1_000_000 + Math.random() * 500_000,
     };
   }
@@ -51,11 +55,14 @@ export class DexRouter {
   ): Promise<DexQuote> {
     await this.sleep(150 + Math.random() * 100);
     const basePrice = 100;
+    const price = basePrice * (0.97 + Math.random() * 0.05);
+    const fee = 0.002;
     return {
       dex: 'meteora',
-      price: basePrice * (0.97 + Math.random() * 0.05),
-      fee: 0.002,
-      estimatedOutput: amount * basePrice * 0.998,
+      price,
+      fee,
+      // USE the dynamic price here
+      estimatedOutput: amount * price * (1 - fee),
       liquidity: 800_000 + Math.random() * 600_000,
     };
   }
