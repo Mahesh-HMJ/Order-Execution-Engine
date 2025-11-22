@@ -416,8 +416,6 @@ rm -rf node_modules package-lock.json
 npm install
 npm test
 
-text
-
 ### WebSocket not connecting
 
 - Open browser DevTools → Network → WS filter
@@ -435,7 +433,8 @@ MIT
 
 ## 👤 Author
 
-GitHub: https://github.com/Mahesh-HMJ 
+GitHub: https://github.com/Mahesh-HMJ
+
 Email: mahesh.ruppa.1233@gmail.com
 
 ---
